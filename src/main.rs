@@ -94,7 +94,7 @@ impl Tab2Space {
         let mut files = Vec::new();
         for entry in fs::read_dir(folder)? {
             let entry = entry?;
-            let path = entry.path();
+            let path: PathBuf = entry.path();
             if path.is_dir() {
                 files.extend(self.all_code_files(&path)?);
             } else if let Some(ext) = path.extension() {
@@ -113,9 +113,10 @@ impl Tab2Space {
             input_folder.to_path_buf()
         };
 
-        for file_name in self.all_code_files(input_folder)? {
-            let input_file_path = input_folder.join(&file_name);
-            let output_file_path = output_folder.join(&file_name);
+        for file_path in self.all_code_files(input_folder)? {
+            let rel_path = file_path.strip_prefix(input_folder).unwrap().to_path_buf();
+            let input_file_path = input_folder.join(&rel_path);
+            let output_file_path = output_folder.join(&rel_path);
             if let Err(e) = self.tab2space_file(&input_file_path, Some(&output_file_path)) {
                 eprintln!("[Warning] Failed to process {:?}: {:?}", input_file_path, e);
             }
